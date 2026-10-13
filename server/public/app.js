@@ -18,6 +18,7 @@ const touchIndicator = document.getElementById('touchIndicator');
 const btnBack = document.getElementById('btnBack');
 const btnHome = document.getElementById('btnHome');
 const btnRecents = document.getElementById('btnRecents');
+const btnUnlock = document.getElementById('btnUnlock');
 const btnDisconnect = document.getElementById('btnDisconnect');
 
 // State
@@ -26,7 +27,8 @@ let peerConnection = null;
 let dataChannel = null;
 let isMouseDown = false;
 let currentTargetId = '';
-let lastSentMoveTime = 0;
+let dragStartCoords = null;
+let dragStartTime = 0;
 
 const rtcConfig = {
   iceServers: [
@@ -302,40 +304,51 @@ function hideTouch() {
 remoteVideo.addEventListener('mousedown', (e) => {
   e.preventDefault();
   isMouseDown = true;
-  const coords = getNormalizedCoordinates(e);
-  showTouch(coords.rawX, coords.rawY);
-  sendInput({
-    action: 'DOWN',
-    xRatio: coords.xRatio,
-    yRatio: coords.yRatio
-  });
+  dragStartCoords = getNormalizedCoordinates(e);
+  dragStartTime = Date.now();
+  showTouch(dragStartCoords.rawX, dragStartCoords.rawY);
 });
 
 window.addEventListener('mousemove', (e) => {
   if (!isMouseDown) return;
-  const now = Date.now();
-  if (now - lastSentMoveTime < 16) return; // Cap at ~60fps
-  lastSentMoveTime = now;
-
   const coords = getNormalizedCoordinates(e);
   showTouch(coords.rawX, coords.rawY);
-  sendInput({
-    action: 'MOVE',
-    xRatio: coords.xRatio,
-    yRatio: coords.yRatio
-  });
 });
 
 window.addEventListener('mouseup', (e) => {
   if (!isMouseDown) return;
   isMouseDown = false;
   hideTouch();
-  const coords = getNormalizedCoordinates(e);
-  sendInput({
-    action: 'UP',
-    xRatio: coords.xRatio,
-    yRatio: coords.yRatio
-  });
+
+  if (!dragStartCoords) return;
+
+  const endCoords = getNormalizedCoordinates(e);
+  const endTime = Date.now();
+  const duration = Math.min(600, Math.max(100, endTime - dragStartTime));
+
+  const dx = endCoords.xRatio - dragStartCoords.xRatio;
+  const dy = endCoords.yRatio - dragStartCoords.yRatio;
+  const dist = Math.hypot(dx, dy);
+
+  if (dist > 0.02) {
+    // Pengguna menyeret / swipe mouse! Mengirim gesture SWIPE yang sesungguhnya ke HP
+    sendInput({
+      action: 'SWIPE',
+      fromX: dragStartCoords.xRatio,
+      fromY: dragStartCoords.yRatio,
+      toX: endCoords.xRatio,
+      toY: endCoords.yRatio,
+      durationMs: duration
+    });
+  } else {
+    // Pengguna hanya klik biasa (TAP)
+    sendInput({
+      action: 'CLICK',
+      xRatio: dragStartCoords.xRatio,
+      yRatio: dragStartCoords.yRatio
+    });
+  }
+  dragStartCoords = null;
 });
 
 // Scroll / Wheel
@@ -344,14 +357,14 @@ remoteVideo.addEventListener('wheel', (e) => {
   const coords = getNormalizedCoordinates(e);
   // Send vertical swipe
   const delta = e.deltaY;
-  const targetY = delta > 0 ? Math.max(0, coords.yRatio - 0.2) : Math.min(1, coords.yRatio + 0.2);
+  const targetY = delta > 0 ? Math.max(0, coords.yRatio - 0.25) : Math.min(1, coords.yRatio + 0.25);
   sendInput({
     action: 'SWIPE',
     fromX: coords.xRatio,
     fromY: coords.yRatio,
     toX: coords.xRatio,
     toY: +targetY.toFixed(4),
-    durationMs: 150
+    durationMs: 180
   });
 }, { passive: false });
 
@@ -383,6 +396,13 @@ btnHome.addEventListener('click', () => {
 btnRecents.addEventListener('click', () => {
   sendInput({ action: 'COMMAND', command: 'RECENTS' });
 });
+
+if (btnUnlock) {
+  btnUnlock.addEventListener('click', () => {
+    // Mengirim perintah geser ke atas untuk membuka lockscreen
+    sendInput({ action: 'COMMAND', command: 'UNLOCK' });
+  });
+}
 
 btnDisconnect.addEventListener('click', () => {
   if (ws && ws.readyState === WebSocket.OPEN) {

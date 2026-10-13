@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Path
 import android.os.Build
+import android.os.PowerManager
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.WindowManager
@@ -119,6 +120,33 @@ class HostAccessibilityService : AccessibilityService() {
                     performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
                 }
             }
+            "UNLOCK", "SWIPE_UP" -> {
+                wakeUpScreen()
+                updateScreenDimensions()
+                // Geser ke atas dari 85% tinggi layar ke 15% tinggi layar
+                performSwipe(
+                    screenWidth * 0.5f,
+                    screenHeight * 0.85f,
+                    screenWidth * 0.5f,
+                    screenHeight * 0.15f,
+                    300L
+                )
+            }
+        }
+    }
+
+    fun wakeUpScreen() {
+        try {
+            val pm = getSystemService(Context.POWER_SERVICE) as? PowerManager
+            @Suppress("DEPRECATION")
+            val wakeLock = pm?.newWakeLock(
+                PowerManager.FULL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP or PowerManager.ON_AFTER_RELEASE,
+                "RemoteApps:WakeLock"
+            )
+            wakeLock?.acquire(3000)
+            wakeLock?.release()
+        } catch (e: Exception) {
+            Log.w(tag, "WakeLock error", e)
         }
     }
 

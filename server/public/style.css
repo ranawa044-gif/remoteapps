@@ -269,6 +269,17 @@ body {
   color: #fff;
 }
 
+.btn-tool.btn-success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.btn-tool.btn-success:hover {
+  background: var(--success);
+  color: #fff;
+}
+
 .btn-tool.btn-danger {
   background: rgba(239, 68, 68, 0.15);
   color: #fca5a5;
