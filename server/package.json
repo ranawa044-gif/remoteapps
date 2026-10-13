@@ -1,0 +1,15 @@
+{
+  "name": "remoteapps-signaling-server",
+  "version": "1.0.0",
+  "description": "Signaling Server and PC Web Client for Android Remote Control",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node test/signaling.test.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.17.0",
+    "cors": "^2.8.5"
+  }
+}

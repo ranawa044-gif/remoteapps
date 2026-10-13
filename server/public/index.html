@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RemoteApps - PC Web Remote Controller</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-icon">📱</span>
+        <div>
+          <h1>RemoteApps</h1>
+          <p class="subtitle">PC-to-Android Web Remote Controller</p>
+        </div>
+      </div>
+      <div id="statusBadge" class="status-badge disconnected">
+        <span class="status-dot"></span>
+        <span id="statusText">Terputus</span>
+      </div>
+    </header>
+
+    <!-- Connect Panel -->
+    <div id="connectPanel" class="card connect-card">
+      <h2>Hubungkan ke HP Target</h2>
+      <p class="desc">Masukkan Device ID 9-digit dan PIN Unattended yang tampil di aplikasi Android.</p>
+      
+      <form id="connectForm">
+        <div class="form-group">
+          <label for="deviceIdInput">Device ID Target</label>
+          <input 
+            type="text" 
+            id="deviceIdInput" 
+            placeholder="Contoh: 123-456-789" 
+            required 
+            pattern="[0-9]{3}-[0-9]{3}-[0-9]{3}|[0-9]{9}"
+            autocomplete="off"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="pinInput">PIN Akses (Unattended Key)</label>
+          <input 
+            type="password" 
+            id="pinInput" 
+            placeholder="PIN 6-digit" 
+            required 
+            maxlength="8"
+            autocomplete="current-password"
+          />
+        </div>
+
+        <button type="submit" id="btnConnect" class="btn btn-primary">
+          <span>Koneksikan Sekarang</span>
+        </button>
+      </form>
+
+      <div id="errorMessage" class="error-banner" style="display: none;"></div>
+
+      <div class="help-box">
+        <h4>ℹ️ Cara Unattended Access:</h4>
+        <ol>
+          <li>Pastikan aplikasi di HP target sudah mengaktifkan <strong>Layanan Remote</strong> dan <strong>Izin Aksesibilitas</strong>.</li>
+          <li>HP tidak perlu ditekan tombol konfirmasi — jika PIN cocok, layar akan langsung muncul otomatis.</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Remote Screen Viewer Panel -->
+    <div id="viewerPanel" class="viewer-panel" style="display: none;">
+      <!-- Navigation Toolbar -->
+      <div class="remote-toolbar">
+        <div class="device-info">
+          <span class="device-tag">Target: <strong id="connectedDeviceId">...</strong></span>
+        </div>
+        <div class="toolbar-actions">
+          <button id="btnBack" class="btn-tool" title="Tombol Back (Kembali)">
+            <span>◀ Back</span>
+          </button>
+          <button id="btnHome" class="btn-tool" title="Tombol Home (Beranda)">
+            <span>⌂ Home</span>
+          </button>
+          <button id="btnRecents" class="btn-tool" title="Tombol Recent Apps">
+            <span>▢ Recents</span>
+          </button>
+          <button id="btnDisconnect" class="btn-tool btn-danger" title="Putuskan Koneksi">
+            <span>✕ Putus</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Remote View Canvas / Video -->
+      <div class="viewport-wrapper">
+        <div class="phone-frame">
+          <video id="remoteVideo" autoplay playsinline muted></video>
+          <div id="touchIndicator" class="touch-indicator"></div>
+        </div>
+      </div>
+
+      <div class="viewer-footer">
+        <p>💡 <em>Klik & seret mouse untuk sentuh/swipe layar HP. Keyboard PC dapat digunakan untuk input teks.</em></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

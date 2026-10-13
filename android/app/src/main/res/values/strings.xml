@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">RemoteApps</string>
+    <string name="accessibility_service_label">RemoteApps Input Control</string>
+    <string name="accessibility_service_description">Layanan ini dibutuhkan untuk mengeksekusi sentuhan jari, geseran (swipe), dan navigasi saat perangkat Anda diremote dari jauh.</string>
+</resources>
